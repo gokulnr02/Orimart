@@ -19,3 +19,25 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.BrandCardScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.BrandCardScroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.CardShadowStyle:hover {
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+  transform: translateY(-4px);
+  transition: transform 0.3s ease-in-out;
+}
