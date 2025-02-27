@@ -20,8 +20,8 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 function Pdf() {
     const [searchTerm, setSearchTerm] = useState("");
     const files = ["hardware.pdf", "/shilage champering tool.pdf", "/Opus Banding Tool.pdf"]
-    const typingTimeoutRef = useRef(null);
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+    // const typingTimeoutRef = useRef(null);
+    // const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
     const [pageTexts, setPageTexts] = useState([]);
     const [file, setFiles] = useState("hardware.pdf");
     const [numPages, setNumPages] = useState(null);
@@ -36,16 +36,16 @@ function Pdf() {
     const handleSelectFile = (file) => {
         setFiles(file);
     }
-    useEffect(() => {
-        if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
-        }
-        typingTimeoutRef.current = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 500);
+    // useEffect(() => {
+    //     if (typingTimeoutRef.current) {
+    //         clearTimeout(typingTimeoutRef.current);
+    //     }
+    //     typingTimeoutRef.current = setTimeout(() => {
+    //         setDebouncedSearchTerm(searchTerm);
+    //     }, 500);
 
-        return () => clearTimeout(typingTimeoutRef.current);
-    }, [searchTerm]);
+    //     return () => clearTimeout(typingTimeoutRef.current);
+    // }, [searchTerm]);
 
     useEffect(() => {
         if (searchTerm && pageTexts.length > 0) {

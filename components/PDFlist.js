@@ -3,27 +3,13 @@
 import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Document, Page } from "react-pdf";
-import { GoChevronLeft, GoChevronRight } from "react-icons/go";
+
 
 function PDFlist({ files, setFiles, layout = "horizontal" }) {
   const scrollRef = useRef(null);
   const router = useRouter();
 
-  const scrollLeft = () => {
-    if (scrollRef.current && layout === "horizontal") {
-      scrollRef.current.scrollLeft -= 200;
-    } else if (scrollRef.current && layout === "vertical") {
-      scrollRef.current.scrollTop -= 200;
-    }
-  };
 
-  const scrollRight = () => {
-    if (scrollRef.current && layout === "horizontal") {
-      scrollRef.current.scrollLeft += 200;
-    } else if (scrollRef.current && layout === "vertical") {
-      scrollRef.current.scrollTop += 200;
-    }
-  };
 
   const BrandClick = () => {
     router.push("/Brand");
