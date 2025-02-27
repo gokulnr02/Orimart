@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef,useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -11,11 +11,20 @@ import { FaChevronRight } from "react-icons/fa6";
 import { GoChevronLeft } from "react-icons/go";
 import { GoChevronRight } from "react-icons/go";
 import { useRouter } from "next/navigation";
+import PDFlist from '../../components/PDFlist';
+import { Document, Page, pdfjs } from "react-pdf";
+import { PDFDocument } from 'pdf-lib';
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 
 const images = [
   "/Images/Tool1.jpg",
   "/Images/Tool2.jpg"
 ];
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
 
 const brandCards = [
   { img: "/Images/CardImg1.jpg", label: "Orient Hardware" },
@@ -54,7 +63,7 @@ export default function ImageSlider() {
   const scrollRight = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollLeft += 200;
-    }
+}   
   };
 
   return (
