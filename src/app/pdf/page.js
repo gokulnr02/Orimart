@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { IoShareSocialOutline } from "react-icons/io5";
 import { MdOutlineFileDownload } from "react-icons/md";
 import { MdMoreVert } from "react-icons/md";

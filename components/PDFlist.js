@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Document, Page } from "react-pdf";
 
 
-function PDFlist({ files, setFiles, layout = "horizontal" }) {
+function PDFlist({ files, setFiles }) {
   const scrollRef = useRef(null);
   const router = useRouter();
 
