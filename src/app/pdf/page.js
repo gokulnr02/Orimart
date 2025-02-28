@@ -36,17 +36,7 @@ function Pdf() {
     const handleSelectFile = (file) => {
         setFiles(file);
     }
-    // useEffect(() => {
-    //     if (typingTimeoutRef.current) {
-    //         clearTimeout(typingTimeoutRef.current);
-    //     }
-    //     typingTimeoutRef.current = setTimeout(() => {
-    //         setDebouncedSearchTerm(searchTerm);
-    //     }, 500);
-
-    //     return () => clearTimeout(typingTimeoutRef.current);
-    // }, [searchTerm]);
-
+ 
     useEffect(() => {
         if (searchTerm && pageTexts.length > 0) {
             const filtered = pageTexts
