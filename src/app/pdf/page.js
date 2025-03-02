@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef  } from "react";
 import { IoShareSocialOutline } from "react-icons/io5";
 import { MdOutlineFileDownload } from "react-icons/md";
 import { MdMoreVert } from "react-icons/md";
@@ -12,13 +12,14 @@ import Image from "next/image";
 import { PDFDocument } from 'pdf-lib';
 import { FiPrinter } from "react-icons/fi";
 import AddPdf from "../../../components/AddPdf";
+import { useSearchParams } from "next/navigation";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     "pdfjs-dist/build/pdf.worker.min.mjs",
     import.meta.url
 ).toString();
 
- function Pdf() {
+function Pdf() {
     const [searchTerm, setSearchTerm] = useState("");
     const [files, setfiles] = useState([])
     // const typingTimeoutRef = useRef(null);
@@ -28,13 +29,14 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     const [file, setFiles] = useState("");
     const [numPages, setNumPages] = useState(null);
     const [filteredPages, setFilteredPages] = useState([]);
-    const [AddPdF, setAddPdF] = useState(false)
-    console.log(AddPdF, 'AddPdF')
+    const [AddPdF, setAddPdF] = useState(false);
+   
 
     const A4_WIDTH = 800;
     const A4_HEIGHT = A4_WIDTH * 1.414;
     const [zoom, setZoom] = useState(1.0);
     const pdfContainerRef = useRef(null);
+    const [state, setState] = useState({ userName: '', password: '' })
 
 
     const handleSelectFile = (file) => {
@@ -54,14 +56,19 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
             setFilteredPages([]);
         }
     }, [searchTerm, pageTexts]);
+
     const onDocumentLoadSuccess = async ({ numPages }) => {
         setNumPages(numPages);
         const pdf = await pdfjs.getDocument(file).promise;
         const texts = await Promise.all(
             Array.from({ length: numPages }, (_, i) => extractPageText(pdf, i + 1))
         );
+        console.log(texts, 'texts')
         setPageTexts(texts);
     };
+
+
+
     const highlightSearchTerm = () => {
         if (!searchTerm) {
             // Restore original text if search is cleared
@@ -90,11 +97,11 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
         });
     };
 
-     function renameFun(filePath) {
-        try{
-         return filePath.replace(/^\.\/uploads\//, "")
-        }catch(er){
-           return filePath
+    function renameFun(filePath) {
+        try {
+            return filePath.replace(/^\.\/uploads\//, "")
+        } catch (er) {
+            return filePath
         }
     }
     const extractPageText = async (pdf, pageNumber) => {
@@ -134,23 +141,45 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
         console.log('Fun')
         setAddPdF(!AddPdF);
     };
-
+  
     useEffect(() => {
+        const searchParams = window.location.href;
+        const cleanedText = searchParams.replace(/^.*\bpdf\?/, "");
+        const key = decodeURIComponent(cleanedText)
+    console.log(key,'keyyy')
         fetch('/api/files')
             .then((res) => res.json())
-            .then((data) => {
+            .then(async (data) => {
                 if (data.success) {
-                    setFiles(data.files[0])
-                    setTilte(data.files[0])
-                    setfiles(data.files);
-                }
+                    const selectedFiles = [];
+
+                    for (const file of data.files) {
+                        try {
+                            const pdf = await pdfjs.getDocument(file).promise;
+                            const texts = await Promise.all(
+                                Array.from({ length: pdf.numPages }, (_, i) => extractPageText(pdf, i + 1))
+                            );
+
+                            if (texts.some((text) => text.includes(key))) {
+                                selectedFiles.push(file);
+                            }
+                        } catch (error) {
+                            console.error("Error processing PDF:", error);
+                        }
+                    }
+                    setFiles(selectedFiles[0])
+                    setTilte(selectedFiles[0])
+                    setfiles(selectedFiles)
+                    console.log("Selected files:", selectedFiles);
+                };
+
             })
             .catch((error) => console.error('Error fetching files:', error));
     }, []);
 
     return (<div className="w-full h-screen flex flex-col relative">
         {/* Top Bar */}
-        {AddPdF && <AddPdf  setView={handleButtonClick}/>}
+        {AddPdF && <AddPdf setView={handleButtonClick} />}
         <div className="w-full h-[80px] flex justify-between items-center shadow-md z-[1] px-4">
             <p className="font-bold">{renameFun(title)}</p>
             <div className="flex items-center space-x-4">
@@ -162,10 +191,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
                     <button title="Zoom In" onClick={() => setZoom(zoom + 0.1)} className="text-base cursor-pointer">+</button>
                 </div>
                 <div className="flex items-center gap-2">
-                    <IoShareSocialOutline className="cursor-pointer"  title="Share"/>
+                    <IoShareSocialOutline className="cursor-pointer" title="Share" />
                     <MdOutlineFileDownload className="cursor-pointer" title="Download" />
-                    <FiPrinter className="cursor-pointer"  title="Print"/>
-                    <MdMoreVert className="cursor-pointer" title="More"/>
+                    <FiPrinter className="cursor-pointer" title="Print" />
+                    <MdMoreVert className="cursor-pointer" title="More" />
                 </div>
             </div>
             <p className="text-sm">
@@ -194,7 +223,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
                 </div>
                 <div className="w-full flex justify-between mt-2 relative">
                     <p className="text-gray-500 text-sm">Document</p>
-                    <div className="bg-sky-500 w-[20px] text-center absolute -right-2" style={{borderRadius:'50%'}}> <p className="cursor-pointer text-sm font-bold text-white text-base" title="Add PDF" onClick={handleButtonClick}>+</p></div>
+                    <div className="bg-sky-500 w-[20px] text-center absolute -right-2" style={{ borderRadius: '50%' }}> <p className="cursor-pointer text-sm font-bold text-white text-base" title="Add PDF" onClick={handleButtonClick}>+</p></div>
                 </div>
                 <div className="mt-2 flex-grow overflow-y-auto scrollbar-hide">
                     <PDFlist files={files} setFiles={handleSelectFile} layout="vertical" />
@@ -215,7 +244,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
             </div>
 
             {/* Right Sidebar */}
-            <div className="w-[20%] h-full flex flex-col items-center p-4 bg-gray-200 gap-2">
+            <div className="w-[20%] h-full flex flex-col items-center p-4 bg-gray-200 gap-2 relative">
                 <p className="text-gray-500 text-sm text-left w-full">Filtered File</p>
                 <div className="w-full bg-gray-100 flex flex-col items-center p-4 border-l border-gray-300 overflow-y-auto">
                     <Button onclick={handleDownload} Name="Download" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700" />
@@ -231,6 +260,56 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
                             <p>No results</p>
                         )}
                     </Document>
+                </div>
+
+                <div className="hidden absolute w-[300px] items-center h-screen bg-white -top-4 z-5">
+                    <div className="mt-[100px] " style={{ width: '90%' }}>
+                        <h1 className="text-sky-500 font-bold text-center">Login To Download</h1>
+                        <div>
+                            <input type="text" name="UserName" className="border w-full h-10 mt-4" placeholder="userName" style={{
+                                padding: '0.4rem 1.25rem',
+                                borderRadius: '0.375rem',
+                                fontSize: '0.875rem',
+                                border: '1px solid',
+                                borderColor: '#d1d5db',
+                                transition: 'background-color 0.3s ease, color 0.3s ease',
+                                outline: 'none'
+                            }} />
+                            <input type="password" name="Password" className="border w-full h-10 mt-4" placeholder="Password" style={{
+                                padding: '0.4rem 1.25rem',
+                                borderRadius: '0.375rem',
+                                fontSize: '0.875rem',
+                                border: '1px solid',
+                                borderColor: '#d1d5db',
+                                transition: 'background-color 0.3s ease, color 0.3s ease',
+                                outline: 'none'
+                            }} />
+                            <p className="mt-4 text-end text-sm text-sky-500 underline cursor-pointer">Sign up?</p>
+                            <button className="border w-full h-10 mt-4" style={{
+                                backgroundColor: (!state.userName && !state.password) ? '#d1d5db' : '#ffffff',
+                                color: (!state.userName && !state.password) ? '#9ca3af' : '#1e40af', // Gray text for disabled, blue for enabled
+                                padding: '0.4rem 1.25rem',
+                                borderRadius: '0.375rem',
+                                fontSize: '0.875rem',
+                                cursor: (!state.userName && !state.password) ? 'not-allowed' : 'pointer',
+                                border: '1px solid',
+                                borderColor: (!state.userName && !state.password) ? '#d1d5db' : '#1e40af',
+                                transition: 'background-color 0.3s ease, color 0.3s ease',
+                            }}
+                                onMouseOver={(e) => {
+                                    if ((state.userName && state.password)) {
+                                        e.target.style.backgroundColor = '#1e40af';
+                                        e.target.style.color = '#ffffff';
+                                    }
+                                }}
+                                onMouseOut={(e) => {
+                                    if ((state.userName && state.password)) {
+                                        e.target.style.backgroundColor = '#ffffff';
+                                        e.target.style.color = '#1e40af';
+                                    }
+                                }}>Sign In</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

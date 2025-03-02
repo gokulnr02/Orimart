@@ -17,6 +17,10 @@ export default function ImageSlider() {
         router.push('/');
     };
 
+    const handleSelectPdf = (query) => {
+        router.push(`/pdf/?${query}`);
+    };
+
     return (
         <div className="w-full h-auto p-6 bg-[#f1f1f1]">
             <div className="w-full h-[85px] flex justify-center items-start">
@@ -65,12 +69,12 @@ export default function ImageSlider() {
                 <div className="mt-6">
                     {activeTab === "Category" ? (
                         <div className="w-full h-auto flex justify-center items-center gap-6 py-8">
-                            <div className="w-auto h-auto flex justify-center items-center rounded-3xl px-6 py-4 gap-4 bg-white">
-                                <BsTools style={{ fontSize: "22px" }} /> <span className="text-lg font-semibold tracking-wide">Hand Tools</span>
+                            <div className="w-auto h-auto flex justify-center items-center rounded-3xl px-6 py-4 gap-4 bg-white cursor-pointer" onClick={()=>handleSelectPdf('BANDING TOOL')}>
+                                <BsTools style={{ fontSize: "22px" }} /> <span className="text-lg font-semibold tracking-wide" >BANDING TOOL</span>
                             </div>
 
-                            <div className="w-auto h-auto flex justify-center items-center rounded-3xl px-6 py-4 gap-4 bg-white">
-                                <GrTools style={{ fontSize: "24px" }} /> <span className="text-lg font-semibold tracking-wide">Power Tools</span>
+                            <div className="w-auto h-auto flex justify-center items-center rounded-3xl px-6 py-4 gap-4 bg-white cursor-pointer" onClick={()=>handleSelectPdf('Small Body')}>
+                                <GrTools style={{ fontSize: "24px" }} /> <span className="text-lg font-semibold tracking-wide" >High Power</span>
                             </div>
 
                             <div className="w-auto h-auto flex justify-center items-center rounded-3xl px-6 py-4 gap-4 bg-white">
