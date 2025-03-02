@@ -9,19 +9,19 @@ function PDFlist({ files, setFiles }) {
   const scrollRef = useRef(null);
   const router = useRouter();
 
-
-
   const BrandClick = () => {
-    router.push("/Brand");
+    // router.push("/Brand");
   };
 
+  console.log(files,'files')
   return (
       <div
         className="h-screen overflow-y-auto  flex flex-col items-center no-scrollbar gap-4"
           ref={scrollRef}
         >
-          {files.map((file, index) => (
-            <div key={index} className="h-auto w-full">
+
+          {files.length > 0 &&  files.map((file, index) => (
+            <div key={index} className="h-auto w-full flex justify-center items-center">
               <div
                 onClick={BrandClick}
                 className="w-[200px] h-full flex flex-col justify-start items-start cursor-pointer "

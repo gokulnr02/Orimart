@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { IoShareSocialOutline } from "react-icons/io5";
 import { MdOutlineFileDownload } from "react-icons/md";
 import { MdMoreVert } from "react-icons/md";
@@ -10,6 +10,7 @@ import { Document, Page, pdfjs } from "react-pdf";
 import Button from "../../../components/Button";
 import Image from "next/image";
 import { PDFDocument } from 'pdf-lib';
+import { FiPrinter } from "react-icons/fi";
 import AddPdf from "../../../components/AddPdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -17,26 +18,30 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     import.meta.url
 ).toString();
 
-function Pdf() {
+ function Pdf() {
     const [searchTerm, setSearchTerm] = useState("");
-    const files = ["hardware.pdf", "/shilage champering tool.pdf", "/Opus Banding Tool.pdf"]
+    const [files, setfiles] = useState([])
     // const typingTimeoutRef = useRef(null);
     // const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+    const [title, setTilte] = useState('')
     const [pageTexts, setPageTexts] = useState([]);
-    const [file, setFiles] = useState("hardware.pdf");
+    const [file, setFiles] = useState("");
     const [numPages, setNumPages] = useState(null);
     const [filteredPages, setFilteredPages] = useState([]);
-    const [AddPdF,setAddPdF] = useState(false)
-    console.log(AddPdF,'AddPdF')
+    const [AddPdF, setAddPdF] = useState(false)
+    console.log(AddPdF, 'AddPdF')
 
     const A4_WIDTH = 800;
     const A4_HEIGHT = A4_WIDTH * 1.414;
+    const [zoom, setZoom] = useState(1.0);
+    const pdfContainerRef = useRef(null);
 
 
     const handleSelectFile = (file) => {
+        setTilte(file);
         setFiles(file);
     }
- 
+
     useEffect(() => {
         if (searchTerm && pageTexts.length > 0) {
             const filtered = pageTexts
@@ -85,7 +90,13 @@ function Pdf() {
         });
     };
 
-
+     function renameFun(filePath) {
+        try{
+         return filePath.replace(/^\.\/uploads\//, "")
+        }catch(er){
+           return filePath
+        }
+    }
     const extractPageText = async (pdf, pageNumber) => {
         const page = await pdf.getPage(pageNumber);
         const textContent = await page.getTextContent();
@@ -122,24 +133,39 @@ function Pdf() {
     const handleButtonClick = () => {
         console.log('Fun')
         setAddPdF(!AddPdF);
-      };
+    };
+
+    useEffect(() => {
+        fetch('/api/files')
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success) {
+                    setFiles(data.files[0])
+                    setTilte(data.files[0])
+                    setfiles(data.files);
+                }
+            })
+            .catch((error) => console.error('Error fetching files:', error));
+    }, []);
 
     return (<div className="w-full h-screen flex flex-col relative">
         {/* Top Bar */}
-       {AddPdF && <AddPdf />}
-        <div className="w-full h-[calc(10vh+80px)] flex justify-between items-center shadow-md z-[1] px-4">
-            <p className="font-bold">Pdf title</p>
+        {AddPdF && <AddPdf  setView={handleButtonClick}/>}
+        <div className="w-full h-[80px] flex justify-between items-center shadow-md z-[1] px-4">
+            <p className="font-bold">{renameFun(title)}</p>
             <div className="flex items-center space-x-4">
-                <p className="text-sm">1/16</p>
+                <p className="text-sm">1/{numPages}</p>
                 <div className="flex items-center gap-2">
-                    <button className="text-base cursor-pointer">-</button>
-                    <p>100%</p>
-                    <button className="text-base cursor-pointer">+</button>
+
+                    <button title="Zoom Out" onClick={() => setZoom(zoom - 0.1)} className="text-base cursor-pointer">-</button>
+                    <p>{Math.round(zoom * 100)}%</p>
+                    <button title="Zoom In" onClick={() => setZoom(zoom + 0.1)} className="text-base cursor-pointer">+</button>
                 </div>
                 <div className="flex items-center gap-2">
-                    <IoShareSocialOutline className="cursor-pointer" />
-                    <MdOutlineFileDownload className="cursor-pointer" />
-                    <MdMoreVert className="cursor-pointer" />
+                    <IoShareSocialOutline className="cursor-pointer"  title="Share"/>
+                    <MdOutlineFileDownload className="cursor-pointer" title="Download" />
+                    <FiPrinter className="cursor-pointer"  title="Print"/>
+                    <MdMoreVert className="cursor-pointer" title="More"/>
                 </div>
             </div>
             <p className="text-sm">
@@ -157,7 +183,7 @@ function Pdf() {
         <div className="w-full flex flex-grow overflow-hidden relative">
 
             {/* Left Sidebar */}
-          
+
             <div className="w-[20%] h-full flex flex-col p-2">
                 <div className="w-full h-8 border ">
                     <input
@@ -166,9 +192,9 @@ function Pdf() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="w-full flex justify-between mt-2">
+                <div className="w-full flex justify-between mt-2 relative">
                     <p className="text-gray-500 text-sm">Document</p>
-                    <p className="cursor-pointer text-sm font-bold" onClick={handleButtonClick}>+</p>
+                    <div className="bg-sky-500 w-[20px] text-center absolute -right-2" style={{borderRadius:'50%'}}> <p className="cursor-pointer text-sm font-bold text-white text-base" title="Add PDF" onClick={handleButtonClick}>+</p></div>
                 </div>
                 <div className="mt-2 flex-grow overflow-y-auto scrollbar-hide">
                     <PDFlist files={files} setFiles={handleSelectFile} layout="vertical" />
@@ -181,7 +207,7 @@ function Pdf() {
                     {numPages &&
                         Array.from({ length: numPages }, (_, i) => (
                             <div key={i} className="text-center ">
-                                <Page pageNumber={i + 1} width={A4_WIDTH} height={A4_HEIGHT} />
+                                <Page pageNumber={i + 1} width={A4_WIDTH} height={A4_HEIGHT} scale={zoom} />
                                 <p>Page {i + 1}</p>
                             </div>
                         ))}

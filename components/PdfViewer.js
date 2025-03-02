@@ -17,6 +17,20 @@ const A4_WIDTH = 800;
 const A4_HEIGHT = A4_WIDTH * 1.414;
 
 export default function PdfViewer() {
+
+    const data = [
+        { id: 1, name: 'John', age: 28, email: 'john@example.com' },
+        { id: 2, name: 'Jane', age: 32, email: 'jane@example.com' },
+        { id: 3, name: 'Alice', age: 25, email: 'alice@example.com' },
+        { id: 4, name: 'Bob', age: 40, email: 'bob@example.com' },
+        { id: 5, name: 'Charlie', age: 30, email: 'charlie@example.com' },
+        { id: 6, name: 'David', age: 22, email: 'david@example.com' },
+        { id: 7, name: 'Eva', age: 35, email: 'eva@example.com' },
+        { id: 8, name: 'Frank', age: 45, email: 'frank@example.com' },
+        { id: 9, name: 'Grace', age: 29, email: 'grace@example.com' },
+        { id: 10, name: 'Hannah', age: 38, email: 'hannah@example.com' },
+      ];
+
     const [numPages, setNumPages] = useState(null);
     const [pageTexts, setPageTexts] = useState([]);
     const [filteredPages, setFilteredPages] = useState([]);
@@ -88,7 +102,10 @@ export default function PdfViewer() {
 
     return (
         <div className="flex h-screen">
-            <div className="w-1/5 bg-gray-100 flex flex-col items-center p-4">
+
+<DynamicTable data={data} itemsPerPage={3} />
+
+            <div className="w-1/5 bg-gray-100 flex flex-col items-center p-4 hidden">
                 <h2 className="text-lg font-semibold">PDF List</h2>
                 <PDFlist files={files} setFiles={handleSelectFile} layout="vertical" />
             </div>

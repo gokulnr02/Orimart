@@ -1,154 +1,223 @@
-import React, { useState } from "react";
-import { FaRegFilePdf } from "react-icons/fa6";
-import { IoMdCloseCircleOutline } from "react-icons/io";
+'use client';
 
-function AddPdf() {
-    const [selectedFiles, setSelectedFiles] = useState([]);
+import React, { useState, useEffect } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaFilePdf } from "react-icons/fa6";
+import { LuMoveUpLeft } from "react-icons/lu";
+import { useRouter } from "next/navigation";
 
-    // Handle File Selection
-    const handleFileChange = (event) => {
-        const newFiles = Array.from(event.target.files);
-        addFiles(newFiles);
-    };
+export default function Upload(props) {
+  const [uploading, setUploading] = useState(false);
+  const [files, setFiles] = useState([]);
+  const fileInputRef = React.createRef(); // Ref to the hidden file input
 
-    // Drag & Drop Functionality
-    const handleDragOver = (event) => {
-        event.preventDefault();
-    };
-
-    const handleDrop = (event) => {
-        event.preventDefault();
-        const newFiles = Array.from(event.dataTransfer.files);
-        addFiles(newFiles);
-    };
-
-    // Add Files to List
-    const addFiles = (newFiles) => {
-        const validFiles = newFiles.filter(file => file.type === "application/pdf");
-        if (validFiles.length === 0) {
-            alert("Only PDF files are allowed.");
-            return;
-        }
-        setSelectedFiles((prev) => [...prev, ...validFiles]);
-    };
-
-    // Remove File
-    const removeFile = (index) => {
-        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-    };
-
-    // Upload Files
-
-    const [progress, setProgress] = useState({});
-
-const handleUpload = async () => {
-    if (selectedFiles.length === 0) {
-        alert("Please select at least one PDF file to upload.");
-        return;
+  // Handle file input changes
+  const handleFileChange = (e) => {
+    const selectedFiles = e.target.files;
+    if (selectedFiles) {
+      const newFiles = Array.from(selectedFiles);
+      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     }
-
-    const formData = new FormData();
-    selectedFiles.forEach((file) => formData.append("pdfFiles", file));
-
-    try {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/upload-pdf", true);
-
-        // Track Upload Progress
-        xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-                const percent = Math.round((event.loaded / event.total) * 100);
-                setProgress((prev) => ({ ...prev, [file.name]: percent }));
-            }
-        };
-
-        xhr.onload = () => {
-            if (xhr.status === 200) {
-                alert("Files uploaded successfully!");
-                setSelectedFiles([]);
-                setProgress({}); // Reset progress
-            } else {
-                alert("File upload failed!");
-            }
-        };
-
-        xhr.onerror = () => alert("An error occurred while uploading files.");
-        xhr.send(formData);
-    } catch (error) {
-        console.error("Upload Error:", error);
-        alert("An error occurred while uploading files.");
-    }
+  };
+const router = useRouter();
+  
+  const BackClick = () => {
+    props.setView()
 };
 
+  // Remove selected file from the list
+  const removeFile = (fileName) => {
+    setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileName));
+  };
 
-    return (
-        <div className="absolute w-full h-screen z-10 flex items-center justify-center bg-gray-100">
-            <div className="bg-white shadow-lg flex flex-col p-6 border rounded-lg" style={{ width: '65%', height: '550px' }}>
-                <div className="border-b p-4">
-                    <h2 className="text-xl font-semibold">File Upload</h2>
-                </div>
-                <div className="w-full flex flex-grow mt-4">
+  // Handle drag-and-drop functionality
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const droppedFiles = e.dataTransfer.files;
+    if (droppedFiles) {
+      handleFileChange({ target: { files: droppedFiles } });
+    }
+  };
 
-                    {/* File Upload Section with Drag & Drop */}
-                    <div
-                        className="flex justify-center items-center border p-4 bg-gray-100"
-                        style={{ width: '40%', borderStyle: 'dashed', borderColor: 'gray' }}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
-                    >
-                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-500 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <svg className="w-8 h-8 mb-4 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
-                                </svg>
-                                <p className="mb-2 text-sm text-gray-600"><span className="font-semibold text-gray-600" style={{ color: 'gray' }}>Click to upload</span> or drag and drop</p>
-                                <p className="text-xs text-gray-400">PDF only</p>
-                            </div>
-                            <input id="dropzone-file" type="file" className="hidden" accept="application/pdf" onChange={handleFileChange} multiple />
-                        </label>
-                    </div>
+  // Allow dropping files on the component
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
-                    {/* Right Section: File List */}
-                    <div className="w-1/2 flex flex-col justify-between items-center p-4">
-                        <div className="w-full flex flex-col items-center justify-center gap-2">
-                            {selectedFiles.map((file, index) => (
-                                <div key={index} className="flex flex-col w-full border p-2 rounded-lg bg-gray-50 shadow-sm" style={{ width: '500px' }}>
-                                    {/* File Info Row */}
-                                    <div className="flex items-center justify-between w-full">
-                                        <div className="flex items-center gap-2">
-                                            <FaRegFilePdf className="text-red-500" style={{ width: '25px', height: '25px' }} />
-                                            <p className="text-sm">{file.name} ({(file.size / 1024).toFixed(2)} KB)</p>
-                                        </div>
-                                        <IoMdCloseCircleOutline
-                                            className="cursor-pointer text-gray-500 hover:text-red-500"
-                                            style={{ width: '20px', height: '20px' }}
-                                            onClick={() => removeFile(index)}
-                                        />
-                                    </div>
+  // Trigger the file input click programmatically
+  const handleClick = () => {
+    fileInputRef.current.click(); // Programmatically trigger the click event
+  };
 
-                                    {/* Progress Bar */}
-                                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                                        <div
-                                            className="bg-blue-500 h-2 rounded-full transition-all duration-500 ease-in-out"
-                                            style={{ width: `${progress[index] || 0}%` }}
-                                        ></div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+  // Upload files in batches of 10
+  const uploadFiles = async () => {
+    setUploading(true);
+    let batchIndex = 0;
+    const batchSize = 10;
+    const batches = [];
 
+    // Split files into batches of 10
+    while (batchIndex < files.length) {
+      const batch = files.slice(batchIndex, batchIndex + batchSize);
+      batches.push(batch);
+      batchIndex += batchSize;
+    }
 
-                        {/* Upload Button */}
-                        <div className="w-full flex justify-end mt-4">
-                            <button onClick={handleUpload} className="border p-2 flex justify-center items-center rounded-md text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 ease-in-out transform hover:scale-105" style={{ width: '100px', height: '40px' }}>
-                                Upload
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    try {
+      // Upload each batch one by one
+      for (const batch of batches) {
+        const formData = new FormData();
+        batch.forEach((file) => formData.append('file', file));
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const result = await response.json();
+
+        if (!result.success) {
+          toast.error('Upload failed');
+          setUploading(false);
+          return;
+        }
+      }
+
+      toast.success(`Upload successful: ${files.length} files`);
+      setFiles([])
+    } catch (error) {
+      toast.error('Error during upload');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="absolute w-full z-10 flex justify-start items-center h-screen bg-white flex-col shadow-md">
+      
+     <div className='w-full absolute top-10 left-10 h-auto p-4'> 
+     <div title="Back" onClick={BackClick}
+                        className="  bg-[#00B0EF] relative  text-white p-3 rounded-full w-[40px] h-[40px] flex justify-center items-center cursor-pointer">
+                        <LuMoveUpLeft style={{ fontSize: "20px" }} />
+          </div>
+     </div>
+
+      <div className="w-full max-w-2xl bg-white p-6 rounded-lg flex flex-col justify-start items-center gap-4">
+        <h1 className="text-xl font-semibold text-gray-700 mb-4">File Upload</h1>
+            
+        {/* Upload Area */}
+        <div className="flex justify-center shadow-md" style={{ border: '1px solid black', borderStyle: 'dashed', width: '50%', borderRadius: '10px' }}>
+          <div
+            style={{ width: '100%', maxWidth: '400px', height: '200px' }}
+            className="flex justify-center items-center border-4 border-dashed border-gray-400 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onClick={handleClick} // Trigger the file input click on area click
+          >
+            <div className="flex flex-col items-center justify-center text-center p-6">
+              <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                />
+              </svg>
+              <p className="text-sm text-gray-500 mb-2">
+                <span className="font-semibold">Click to upload</span> or drag and drop
+              </p>
+              <p className="text-xs text-gray-300">PDF</p>
             </div>
+            {/* This hidden input allows users to select files when they click the area */}
+            <input
+              ref={fileInputRef} // Add the ref to the input
+              id="dropzone-file"
+              type="file"
+              className="hidden"
+              onChange={handleFileChange}
+              multiple
+              accept=".pdf"
+            />
+          </div>
         </div>
-    );
-}
 
-export default AddPdf;
+        {/* Upload Message */}
+        <div className="text-center mt-4">
+          {uploading && <p className="text-gray-600">Uploading...</p>}
+        </div>
+
+        {/* File List */}
+        <div className="p-2 w-full max-w-2xl bg-white rounded-lg flex flex-col justify-center items-center">
+          <div className="flex justify-end " style={{ width: '50%' }}>
+            <button
+              onClick={uploadFiles}
+              disabled={files.length === 0 || uploading}
+              style={{
+                backgroundColor: files.length === 0 || uploading ? '#d1d5db' : '#ffffff',
+                color: files.length === 0 || uploading ? '#9ca3af' : '#1e40af', // Gray text for disabled, blue for enabled
+                padding: '0.4rem 1.25rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.875rem',
+                cursor: files.length === 0 || uploading ? 'not-allowed' : 'pointer',
+                border: '1px solid',
+                borderColor: files.length === 0 || uploading ? '#d1d5db' : '#1e40af',
+                transition: 'background-color 0.3s ease, color 0.3s ease',
+              }}
+              onMouseOver={(e) => {
+                if (files.length > 0 && !uploading) {
+                  e.target.style.backgroundColor = '#1e40af';
+                  e.target.style.color = '#ffffff';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (files.length > 0 && !uploading) {
+                  e.target.style.backgroundColor = '#ffffff';
+                  e.target.style.color = '#1e40af';
+                }
+              }}
+            >
+              Upload
+            </button>
+
+          </div>
+
+          <div className="mt-4" style={{ height: '100%', width: '50%' }}>
+            {files.length > 0 ? (
+              <ul className="list-disc pl-6">
+                {files.map((file, index) => (
+                  <li key={index} className="text-gray-600 flex justify-between items-center border py-2 px-2 bg-gray-100 mt-2" style={{ borderRadius: '5px' }}>
+                    <div className="flex justify-center items-center gap-1">
+                      <FaFilePdf className="text-gray-600" style={{ width: '50px' }} />
+                      <span className="text-sm" style={{ fontWeight: '500' }}>{file.name}</span>
+                    </div>
+                    <button
+                      onClick={() => removeFile(file.name)}
+                      className="ml-2 text-red-500 hover:text-red-700"
+                    >
+                      ✖
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500">No files selected.</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={true}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+      />
+    </div>
+  );
+}
