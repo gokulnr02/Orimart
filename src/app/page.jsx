@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { useEffect, useRef,useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -21,6 +21,7 @@ const images = [
   "/Images/Tool1.jpg",
   "/Images/Tool2.jpg"
 ];
+
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url
@@ -63,7 +64,7 @@ export default function ImageSlider() {
   const scrollRight = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollLeft += 200;
-}   
+    }
   };
 
   return (
